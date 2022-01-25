@@ -1,0 +1,4 @@
+type Mutation {
+  createBook(title: String, publisher: String, rating: Int, pagesCount: Int, authorId: String): Book
+  createAuthor(firstName: String, lastName: String, addressId: String): Author
+}

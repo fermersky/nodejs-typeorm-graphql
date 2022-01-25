@@ -1,0 +1,8 @@
+type Address {
+  id: ID
+  country: String
+  city: String
+  street: String
+  house: String
+  authors: [Author]
+}
