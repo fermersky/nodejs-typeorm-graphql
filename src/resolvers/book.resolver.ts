@@ -57,8 +57,8 @@ export default {
       resolve: (payload) => {
         return payload.newBook;
       },
-      subscribe: (data) => {
-        console.log('SUBSCRIPTION DATA ', data);
+      subscribe: (_, args) => {
+        console.log('SUBSCRIPTION DATA ', args);
         return pubsub.asyncIterator(['NEW_BOOK_CREATED']);
       },
     },

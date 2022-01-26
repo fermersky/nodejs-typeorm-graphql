@@ -29,7 +29,7 @@ export default {
         `
         select a.*, first_name as "firstName", last_name as "lastName" from author a
         where concat(a.first_name, ' ', a.last_name) like $1
-       `,
+        `,
         [pattern]
       );
 

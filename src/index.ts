@@ -6,7 +6,7 @@ import Author from './entity/author.entity';
 import Book from './entity/book.entity';
 import resolvers from './resolvers';
 import { ApolloServer } from 'apollo-server-express';
-import typeDefs from './graphql/index';
+import typeDefs from './graphql';
 import Address from './entity/address.entity';
 import log from './util/logger';
 import http from 'http';
