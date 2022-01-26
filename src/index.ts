@@ -5,7 +5,9 @@ import { createConnection } from 'typeorm';
 import Author from './entity/author.entity';
 import Book from './entity/book.entity';
 import resolvers from './resolvers';
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer, makeExecutableSchema } from 'apollo-server-express';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+import { execute, subscribe } from 'graphql';
 import typeDefs from './graphql';
 import Address from './entity/address.entity';
 import log from './util/logger';
@@ -14,15 +16,35 @@ import http from 'http';
 const app = express();
 const httpServer = http.createServer(app);
 
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+
+const subscriptionServer = SubscriptionServer.create(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  { server: httpServer, path: '/graphql' }
+);
+
 const apolloServer = new ApolloServer({
-  resolvers,
-  typeDefs,
+  schema,
   context: (httpContext) => httpContext, // if you want ot use request and response objects in resolver functions
+  plugins: [
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            subscriptionServer.close();
+          },
+        };
+      },
+    } as any,
+  ],
 });
 
 app.use(express.json());
 apolloServer.applyMiddleware({ app });
-apolloServer.installSubscriptionHandlers(httpServer);
 
 app.get('/', (req, res) => {
   res.end('test');
