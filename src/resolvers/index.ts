@@ -17,4 +17,8 @@ export default {
     ...AuthorResolver.Mutation,
     ...BookResolver.Mutation,
   },
+
+  Subscription: {
+    ...BookResolver.Subscription,
+  },
 };

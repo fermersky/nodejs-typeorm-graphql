@@ -1,6 +1,9 @@
 import Book from '../entity/book.entity';
 import log from '../util/logger';
 import { bookAuthorLoader } from '../data-loaders/book.loader';
+import { PubSub } from 'apollo-server-express';
+
+const pubsub = new PubSub();
 
 export default {
   Query: {
@@ -33,9 +36,11 @@ export default {
   Mutation: {
     createBook: async (parent, args) => {
       const book = Book.create(args);
-      const bookCreated = await Book.save(book);
+      const newBook = await Book.save(book);
 
-      return bookCreated;
+      pubsub.publish('NEW_BOOK_CREATED', { newBook });
+
+      return newBook;
     },
   },
 
@@ -44,6 +49,18 @@ export default {
       const author = await bookAuthorLoader.load(book.id);
 
       return author;
+    },
+  },
+
+  Subscription: {
+    newBookCreated: {
+      resolve: (payload) => {
+        return payload.newBook;
+      },
+      subscribe: (data) => {
+        console.log('SUBSCRIPTION DATA ', data);
+        return pubsub.asyncIterator(['NEW_BOOK_CREATED']);
+      },
     },
   },
 };

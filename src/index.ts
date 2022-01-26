@@ -9,8 +9,10 @@ import { ApolloServer } from 'apollo-server-express';
 import typeDefs from './graphql/index';
 import Address from './entity/address.entity';
 import log from './util/logger';
+import http from 'http';
 
 const app = express();
+const httpServer = http.createServer(app);
 
 const apolloServer = new ApolloServer({
   resolvers,
@@ -20,6 +22,7 @@ const apolloServer = new ApolloServer({
 
 app.use(express.json());
 apolloServer.applyMiddleware({ app });
+apolloServer.installSubscriptionHandlers(httpServer);
 
 app.get('/', (req, res) => {
   res.end('test');
@@ -40,7 +43,7 @@ createConnection().then(async (result) => {
   }
 });
 
-app.listen(5812, () => console.log('🚀 server is running on port 5812'));
+httpServer.listen(5812, () => console.log('🚀 server is running on port 5812'));
 
 process.on('uncaughtException', (err) => {
   log.fatal('Uncaught exception: ', err);

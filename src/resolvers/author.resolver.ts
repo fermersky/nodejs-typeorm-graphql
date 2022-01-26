@@ -2,6 +2,9 @@ import Author from '../entity/author.entity';
 import log from '../util/logger';
 import { plainToInstance } from 'class-transformer';
 import { authorAddressLoader, authorBooksLoader } from '../data-loaders/author.loader';
+import { PubSub } from 'apollo-server-express';
+
+const pubsub = new PubSub();
 
 export default {
   Query: {
@@ -39,9 +42,9 @@ export default {
   Mutation: {
     createAuthor: async (parent, args) => {
       const author = Author.create(args);
-      const savedAuthor = await Author.save(author);
+      const newAuthor = await Author.save(author);
 
-      return savedAuthor;
+      return newAuthor;
     },
   },
 
