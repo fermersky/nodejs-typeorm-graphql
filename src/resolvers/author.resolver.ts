@@ -3,6 +3,7 @@ import log from '../util/logger';
 import { plainToInstance } from 'class-transformer';
 import { authorAddressLoader, authorBooksLoader } from '../data-loaders/author.loader';
 import { PubSub } from 'apollo-server-express';
+import ESClient from '../es/es-client';
 
 const pubsub = new PubSub();
 
@@ -44,7 +45,21 @@ export default {
       const author = Author.create(args);
       const newAuthor = await Author.save(author);
 
+      await ESClient.indexAuthor(newAuthor as any);
+
       return newAuthor;
+    },
+
+    deleteAuthor: async (parent, { id }) => {
+      try {
+        await Author.delete({ id });
+        await ESClient.deleteAuthor(id);
+
+        return true;
+      } catch (er) {
+        console.error(er);
+        return false;
+      }
     },
   },
 

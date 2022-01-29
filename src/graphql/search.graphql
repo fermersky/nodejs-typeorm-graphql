@@ -1,0 +1,15 @@
+type AuthorSearchResult {
+  _elastic_id: String
+  _index: String
+  _score: Float
+  _type: String
+  id: ID
+  fullName: String
+  books: [Book]
+  address: Address
+}
+
+type SearchResult {
+  books: [Book]
+  authors(fullName: String): [AuthorSearchResult]
+}

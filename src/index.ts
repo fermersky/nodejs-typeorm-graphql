@@ -12,61 +12,67 @@ import typeDefs from './graphql';
 import Address from './entity/address.entity';
 import log from './util/logger';
 import http from 'http';
+import ESClient from './es/es-client';
+require('dotenv/config');
 
-const app = express();
-const httpServer = http.createServer(app);
+(async () => {
+  await ESClient.init({});
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+  const app = express();
+  const httpServer = http.createServer(app);
 
-const subscriptionServer = SubscriptionServer.create(
-  {
-    schema,
-    execute,
-    subscribe,
-  },
-  { server: httpServer, path: '/graphql' }
-);
+  const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-const apolloServer = new ApolloServer({
-  schema,
-  context: (httpContext) => httpContext, // if you want ot use request and response objects in resolver functions
-  plugins: [
+  const subscriptionServer = SubscriptionServer.create(
     {
-      async serverWillStart() {
-        return {
-          async drainServer() {
-            subscriptionServer.close();
-          },
-        };
-      },
-    } as any,
-  ],
-});
+      schema,
+      execute,
+      subscribe,
+    },
+    { server: httpServer, path: '/graphql' }
+  );
 
-app.use(express.json());
-apolloServer.applyMiddleware({ app });
+  const apolloServer = new ApolloServer({
+    schema,
+    context: (httpContext) => httpContext, // if you want ot use request and response objects in resolver functions
+    plugins: [
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              subscriptionServer.close();
+            },
+          };
+        },
+      } as any,
+    ],
+  });
 
-app.get('/', (req, res) => {
-  res.end('test');
-});
+  app.use(express.json());
+  apolloServer.applyMiddleware({ app });
 
-createConnection().then(async (result) => {
-  if (result.isConnected) {
-    console.log('📃 typeorm connection successfull');
+  app.get('/', (req, res) => {
+    res.end('test');
+  });
 
-    // const book = Book.create({title: 'War and Peace', rating: 5, publisher: 'Kniga i Pechat', pagesCount: 1200})
-    // await Book.save(book)
+  createConnection().then(async (result) => {
+    if (result.isConnected) {
+      console.log('📃 typeorm connection successfull');
 
-    // const address = Address.create({country: 'Ukraine', city: 'Kyiv', street: 'Artema', house: '2'})
-    // await Address.save(address)
+      // const book = Book.create({title: 'War and Peace', rating: 5, publisher: 'Kniga i Pechat', pagesCount: 1200})
+      // await Book.save(book)
 
-    // const lev = Author.create({firstName: 'Lev', lastName: 'Tolstoi', books: [book], address})
-    // await Author.save(lev)
-  }
-});
+      // const address = Address.create({country: 'Ukraine', city: 'Kyiv', street: 'Artema', house: '2'})
+      // await Address.save(address)
 
-httpServer.listen(5812, () => console.log('🚀 server is running on port 5812'));
+      // const lev = Author.create({firstName: 'Lev', lastName: 'Tolstoi', books: [book], address})
+      // await Author.save(lev)
+    }
+  });
 
-process.on('uncaughtException', (err) => {
-  log.fatal('Uncaught exception: ', err);
-});
+  httpServer.listen(5812, () => console.log('🚀 server is running on port 5812'));
+
+  process.on('uncaughtException', (err) => {
+    log.fatal('Uncaught exception: ', err);
+  });
+})();
