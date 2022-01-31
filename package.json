@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "build": "tsc; cp ./src/graphql-schema/*.graphql ./dist/graphql-schema",
+    "prebuild": "echo test",
+    "build": "tsc && cp ./src/graphql/*.graphql ./dist/graphql",
     "postbuild": "echo 📦 build succeeded",
     "dev": "ts-node src/index.ts | pino-pretty -c -t -l"
   },
